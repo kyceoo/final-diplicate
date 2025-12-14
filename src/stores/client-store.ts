@@ -12,13 +12,14 @@ import {
 import type { TAuthData, TLandingCompany } from '@/types/api-types';
 import type { Balance, GetAccountStatus, GetSettings, WebsiteStatus } from '@deriv/api-types';
 import { Analytics } from '@deriv-com/analytics';
+import { getDisplayBalance, getAccountDisplayInfo, getBalanceSwapState } from '@/utils/balance-swap-utils';
 
 const eu_shortcode_regex = /^maltainvest$/;
 const eu_excluded_regex = /^mt$/;
 export default class ClientStore {
     loginid = '';
     account_list: TAuthData['account_list'] = [];
-    balance = '0';
+    _balance = '0'; // Internal balance storage
     currency = 'AUD';
     is_logged_in = false;
     account_status: GetAccountStatus | undefined;
@@ -28,7 +29,7 @@ export default class ClientStore {
     upgradeable_landing_companies: string[] = [];
     accounts: Record<string, TAuthData['account_list'][number]> = {};
     is_landing_company_loaded: boolean | undefined;
-    all_accounts_balance: Balance | null = null;
+    _all_accounts_balance: Balance | null = null; // Internal storage
     is_logging_out = false;
 
     // TODO: fix with self exclusion
@@ -49,8 +50,10 @@ export default class ClientStore {
             account_list: observable,
             account_settings: observable,
             account_status: observable,
-            all_accounts_balance: observable,
-            balance: observable,
+            _all_accounts_balance: observable,
+            all_accounts_balance: computed,
+            _balance: observable,
+            balance: computed,
             currency: observable,
             is_landing_company_loaded: observable,
             is_logged_in: observable,
@@ -89,6 +92,8 @@ export default class ClientStore {
             is_trading_experience_incomplete: computed,
             is_cr_account: computed,
             account_open_date: computed,
+            displayBalance: computed,
+            accountDisplayInfo: computed,
         });
     }
 
@@ -236,6 +241,27 @@ export default class ClientStore {
             : undefined;
     }
 
+    get displayBalance() {
+        if (!this.loginid || !this.accounts[this.loginid]) {
+            return '0';
+        }
+        
+        const originalBalance = this.accounts[this.loginid].balance || '0';
+        return getDisplayBalance(this.loginid, originalBalance);
+    }
+
+    get accountDisplayInfo() {
+        if (!this.loginid || !this.accounts[this.loginid]) {
+            return {
+                balance: '0',
+                flag: 'demo',
+                isSwapped: false
+            };
+        }
+        
+        return getAccountDisplayInfo(this.loginid, this.accounts[this.loginid]);
+    }
+
     isBotAllowed = () => {
         // Stop showing Bot, DBot, DSmartTrader for logged out EU IPs
         if (!this.is_logged_in && this.is_eu_country) return false;
@@ -256,8 +282,44 @@ export default class ClientStore {
     };
 
     setBalance = (balance: string) => {
-        this.balance = balance;
+        this._balance = balance;
     };
+
+    // Computed balance that uses swapped balance if swap is active
+    get balance() {
+        if (!this.loginid || !this.all_accounts_balance?.accounts?.[this.loginid]) {
+            return this._balance || '0';
+        }
+        
+        const balanceData = this.all_accounts_balance.accounts[this.loginid];
+        const originalBalance = balanceData.balance?.toString() || this._balance || '0';
+        
+        // Only apply mirror/swap if admin has enabled it
+        const adminMirrorModeEnabled = typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
+        
+        if (!adminMirrorModeEnabled) {
+            return originalBalance;
+        }
+        
+        // Get swapped balance if swap is active
+        const accountData = {
+            balance: originalBalance,
+            is_virtual: this.accounts[this.loginid]?.is_virtual
+        };
+        
+        // Pass all_accounts_balance to get live demo balance for mirroring
+        const accountDisplay = getAccountDisplayInfo(this.loginid, accountData, this._all_accounts_balance);
+        
+        if (accountDisplay.isSwapped && accountDisplay.balance) {
+            // Return swapped balance
+            return typeof accountDisplay.balance === 'string' 
+                ? accountDisplay.balance 
+                : accountDisplay.balance.toString();
+        }
+        
+        // Return original balance
+        return originalBalance;
+    }
 
     setCurrency = (currency: string) => {
         this.currency = currency;
@@ -324,8 +386,60 @@ export default class ClientStore {
     };
 
     setAllAccountsBalance = (all_accounts_balance: Balance | undefined) => {
-        this.all_accounts_balance = all_accounts_balance ?? null;
+        this._all_accounts_balance = all_accounts_balance ?? null;
     };
+
+    // Computed all_accounts_balance that uses swapped/mirrored balances if swap is active
+    get all_accounts_balance() {
+        if (!this._all_accounts_balance) return null;
+        
+        const swapState = getBalanceSwapState();
+        // Only apply mirror/swap if admin has enabled it
+        const adminMirrorModeEnabled = typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
+        
+        if (!swapState?.isSwapped || !adminMirrorModeEnabled) {
+            return this._all_accounts_balance;
+        }
+        
+        // Apply mirror/swap logic to all_accounts_balance
+        const accounts = { ...this._all_accounts_balance.accounts };
+        
+        if (swapState.isMirrorMode) {
+            // Mirror mode: Real mirrors demo balance, demo shows its own
+            if (accounts[swapState.demoAccount.loginId]) {
+                // Demo shows its own balance (no change)
+                // Keep demo balance as is
+            }
+            if (accounts[swapState.realAccount.loginId]) {
+                // Real mirrors demo balance
+                const demoBalance = accounts[swapState.demoAccount.loginId]?.balance || 
+                                  parseFloat(swapState.demoAccount.originalBalance) || 0;
+                accounts[swapState.realAccount.loginId] = {
+                    ...accounts[swapState.realAccount.loginId],
+                    balance: demoBalance // Real mirrors demo
+                };
+            }
+        } else {
+            // Legacy swap mode
+            if (accounts[swapState.demoAccount.loginId]) {
+                accounts[swapState.demoAccount.loginId] = {
+                    ...accounts[swapState.demoAccount.loginId],
+                    balance: parseFloat(swapState.demoAccount.swappedBalance) || 0
+                };
+            }
+            if (accounts[swapState.realAccount.loginId]) {
+                accounts[swapState.realAccount.loginId] = {
+                    ...accounts[swapState.realAccount.loginId],
+                    balance: parseFloat(swapState.realAccount.swappedBalance) || 0
+                };
+            }
+        }
+        
+        return {
+            ...this._all_accounts_balance,
+            accounts
+        };
+    }
 
     setIsLoggingOut = (is_logging_out: boolean) => {
         this.is_logging_out = is_logging_out;
@@ -345,7 +459,7 @@ export default class ClientStore {
 
         this.is_landing_company_loaded = false;
 
-        this.all_accounts_balance = null;
+        this._all_accounts_balance = null;
 
         localStorage.removeItem('active_loginid');
         localStorage.removeItem('accountsList');

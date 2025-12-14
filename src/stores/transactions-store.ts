@@ -6,6 +6,7 @@ import { TPortfolioPosition, TStores } from '@deriv/stores/types';
 import { TContractInfo } from '../components/summary/summary-card.types';
 import { transaction_elements } from '../constants/transactions';
 import { getStoredItemsByKey, getStoredItemsByUser, setStoredItemsByKey } from '../utils/session-storage';
+import { getBalanceSwapState, transformTransactionIdForAdmin } from '../utils/balance-swap-utils';
 import RootStore from './root-store';
 
 type TTransaction = {
@@ -107,9 +108,81 @@ export default class TransactionsStore {
         const is_completed = isEnded(data as ProposalOpenContract);
         const { run_id } = this.root_store.run_panel;
         const current_account = this.core?.client?.loginid as string;
+        
+        if (!this.elements[current_account]) {
+            this.elements = {
+                ...this.elements,
+                [current_account]: [],
+            };
+        }
+
+        // Check for duplicates BEFORE transforming transaction IDs
+        // Use original transaction_id for duplicate detection to prevent false duplicates
+        const original_buy_id = data.transaction_ids?.buy;
+        const same_contract_index = this.elements[current_account]?.findIndex(c => {
+            if (typeof c.data === 'string') return false;
+            if (c.type !== transaction_elements.CONTRACT || !c.data?.transaction_ids) return false;
+            
+            // Check against both original and potentially transformed IDs
+            const stored_buy_id = c.data.transaction_ids.buy;
+            
+            // Direct match
+            if (stored_buy_id === original_buy_id) return true;
+            
+            // Also check if this is a transformed ID scenario (admin mirror mode)
+            // If stored ID starts with 1 and original starts with 5 (or vice versa),
+            // they might be the same contract (transformed for display)
+            if (original_buy_id && stored_buy_id) {
+                const original_str = original_buy_id.toString();
+                const stored_str = stored_buy_id.toString();
+                
+                // If one starts with 5 and the other with 1, and the rest matches, it's the same contract
+                if ((original_str.startsWith('5') && stored_str.startsWith('1')) ||
+                    (original_str.startsWith('1') && stored_str.startsWith('5'))) {
+                    if (original_str.substring(1) === stored_str.substring(1)) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        });
+        
+        // In admin mirror mode, override currency and transaction IDs to show real account info
+        let displayCurrency = data.currency;
+        let displayTransactionIds = data.transaction_ids;
+        const adminMirrorModeEnabled = typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
+        if (adminMirrorModeEnabled) {
+            const swapState = getBalanceSwapState();
+            if (swapState?.isSwapped && swapState?.isMirrorMode) {
+                const current_account_data = this.core?.client?.account_list?.find(
+                    (account: any) => account.loginid === current_account
+                );
+                if (current_account_data?.is_virtual) {
+                    // Trading with demo, but show real account currency and transaction IDs
+                    const real_account = this.core?.client?.account_list?.find(
+                        (account: any) => account.loginid === swapState.realAccount.loginId
+                    );
+                    if (real_account) {
+                        displayCurrency = real_account.currency || 'USD';
+                    }
+                    // Transform transaction IDs: convert demo IDs (starting with 5) to real IDs (starting with 1)
+                    if (data.transaction_ids) {
+                        displayTransactionIds = {
+                            buy: transformTransactionIdForAdmin(data.transaction_ids.buy, true) ?? data.transaction_ids.buy,
+                            sell: data.transaction_ids.sell 
+                                ? (transformTransactionIdForAdmin(data.transaction_ids.sell, true) ?? data.transaction_ids.sell)
+                                : undefined
+                        };
+                    }
+                }
+            }
+        }
 
         const contract: TContractInfo = {
             ...data,
+            currency: displayCurrency, // Use display currency (real account currency in admin mode)
+            transaction_ids: displayTransactionIds, // Use transformed transaction IDs (real format in admin mode)
             is_completed,
             run_id,
             date_start: formatDate(data.date_start, 'YYYY-M-D HH:mm:ss [GMT]'),
@@ -119,22 +192,6 @@ export default class TransactionsStore {
             exit_tick_time: data.exit_tick_time && formatDate(data.exit_tick_time, 'YYYY-M-D HH:mm:ss [GMT]'),
             profit: is_completed ? data.profit : 0,
         };
-
-        if (!this.elements[current_account]) {
-            this.elements = {
-                ...this.elements,
-                [current_account]: [],
-            };
-        }
-
-        const same_contract_index = this.elements[current_account]?.findIndex(c => {
-            if (typeof c.data === 'string') return false;
-            return (
-                c.type === transaction_elements.CONTRACT &&
-                c.data?.transaction_ids &&
-                c.data.transaction_ids.buy === data.transaction_ids?.buy
-            );
-        });
 
         if (same_contract_index === -1) {
             // Render a divider if the "run_id" for this contract is different.

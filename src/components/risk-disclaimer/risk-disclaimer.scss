@@ -6,8 +6,8 @@
     animation: slide-in-left 0.5s ease-out;
 
     &__btn {
-        background: #3B6FA2 !important; // Navigation bar color
-        color: #ffffff !important;
+        background: #FFD700 !important; // Bright golden yellow
+        color: #000000 !important; // Black text for contrast
         border: none !important;
         padding: 8px 16px !important;
         border-radius: 4px !important;
@@ -17,7 +17,7 @@
         transition: all 0.3s ease !important;
 
         &:hover {
-            background: #2E5A8A !important; // Darker shade on hover
+            background: #FFC107 !important; // Darker golden yellow on hover
             transform: translateY(-1px) !important;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
         }
@@ -52,8 +52,8 @@
     }
 
     &__understand-btn {
-        background: #3B6FA2 !important; // Navigation bar color
-        color: #ffffff !important;
+        background: #FFD700 !important; // Bright golden yellow
+        color: #000000 !important; // Black text for contrast
         border: none !important;
         padding: 12px 32px !important;
         border-radius: 4px !important;
@@ -61,7 +61,7 @@
         min-width: 150px;
 
         &:hover {
-            background: #2E5A8A !important; // Darker shade on hover
+            background: #FFC107 !important; // Darker golden yellow on hover
         }
     }
 }

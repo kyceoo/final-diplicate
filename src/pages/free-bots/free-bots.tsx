@@ -27,23 +27,15 @@ const FreeBots = observer(() => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Manifest-driven list for instant load and prefetch
+    // Show selected bots from public/xml (explicit curated list)
     const getXmlFiles = () => {
         return [
-            '$DollarprinterbotOrignal$.xml',
-            '360 PRINTER BOT____ [ Version 2.2 ].xml',
-            'Candle-Mine Version 2  (2).xml',
-            'DIFFERS KILLER BOT.xml',
-            'Digits Switcher Bot.xml',
-            'DOLLAR  HUNTER BOT ORIGINAL UPDATED.xml',
-            'Legoo-sniper-bot.xml',
+            'MATRIX V5 SPEEDBOT.xml (1).xml',
             'MKOREAN SV6 BOT (1).xml',
-            'Marvel PRO Fully Auto V 2.0  [Original] by {www.360tradinghub.co.ke}.xml',
-            'Marvel SPLIT Version by 360 Trading Hub.xml',
-            "Mathews' speed bot.xml",
-            'Printed_dollars_Bot.xml',
-            'TC Bot 1.1.xml',
-            'legoospeedbot.xml',
+            'NEXUS SPEEDBOT V5.xml (1).xml',
+            'RISE AND FALL AUTO BOT.xml (1).xml',
+            'Titans V3.xml (1).xml',
+            'Xenon RV1.xml',
         ];
     };
 
@@ -110,22 +102,10 @@ const FreeBots = observer(() => {
             setIsLoading(false); // hide "Loading free bots..." right away
 
             try {
-                // 1) Fetch manifest with timeout; fallback to initial list if slow
-                const withTimeout = <T,>(p: Promise<T>, ms = 800): Promise<T | null> =>
-                    new Promise(resolve => {
-                        const t = setTimeout(() => resolve(null), ms);
-                        p.then(r => {
-                            clearTimeout(t);
-                            resolve(r);
-                        }).catch(() => {
-                            clearTimeout(t);
-                            resolve(null);
-                        });
-                    });
+                // Force use of explicit list only; ignore remote manifest
+                const manifest = getXmlFiles().map(file => ({ name: file.replace('.xml',''), file }));
 
-                const manifest = (await withTimeout(getBotsManifest(), 800)) || fallback;
-
-                // 2) If manifest differs, update skeletons to match
+                // Update skeletons to our explicit list
                 const skeletonBots: BotData[] = manifest.map(item => ({
                     name: (item.name || item.file.replace('.xml', '')).replace(/[_-]/g, ' '),
                     description: `Advanced trading bot: ${(item.name || item.file.replace('.xml', '')).replace(/[_-]/g, ' ')}`,
@@ -200,27 +180,17 @@ const FreeBots = observer(() => {
                                     <Text size='s' weight='bold' className='free-bot-card__title'>
                                         {bot.name}
                                     </Text>
-                                    <div className='free-bot-card__badges'>
-                                        <span className='free-bot-card__badge free-bot-card__badge--difficulty'>
-                                            {bot.difficulty}
-                                        </span>
-                                        <span className='free-bot-card__badge free-bot-card__badge--strategy'>
-                                            {bot.strategy}
-                                        </span>
+                                    
+                                    {/* Star Rating */}
+                                    <div className='free-bot-card__rating'>
+                                        <span className='star'>★</span>
+                                        <span className='star'>★</span>
+                                        <span className='star'>★</span>
+                                        <span className='star'>★</span>
+                                        <span className='star'>★</span>
                                     </div>
                                 </div>
 
-                                <Text size='xs' color='general' className='free-bot-card__description'>
-                                    {bot.description}
-                                </Text>
-
-                                <div className='free-bot-card__features'>
-                                    {bot.features.map((feature, featureIndex) => (
-                                        <span key={featureIndex} className='free-bot-card__feature'>
-                                            {feature}
-                                        </span>
-                                    ))}
-                                </div>
 
                                 <Button
                                     className='free-bot-card__load-btn'
@@ -230,7 +200,7 @@ const FreeBots = observer(() => {
                                     type='button'
                                     disabled={!bot.xml} // Disable if XML not loaded yet
                                 >
-                                    {bot.xml ? localize('Load Bot') : localize('Loading...')}
+                                    {bot.xml ? 'LOAD PREMIUM BOT' : 'LOADING...'}
                                 </Button>
                             </div>
                         ))}

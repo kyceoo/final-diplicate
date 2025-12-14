@@ -1,5 +1,6 @@
 import { LogTypes } from '../../../constants/messages';
 import { api_base } from '../../api/api-base';
+import ApiHelpers from '../../api/api-helpers';
 import { contractStatus, info, log } from '../utils/broadcast';
 import { doUntilDone, getUUID, recoverFromError, tradeOptionToBuy } from '../utils/helpers';
 import { purchaseSuccessful } from './state/actions';
@@ -11,6 +12,41 @@ let purchase_reference;
 
 export default Engine =>
     class Purchase extends Engine {
+        applyAlternateMarketsToCurrentTradeOptions() {
+            try {
+                // Highest priority: explicit force symbol set by active_symbol_changer
+                const force_symbol = window?.DBot?.__force_symbol;
+                if (force_symbol && force_symbol !== 'disable' && this.tradeOptions?.symbol !== force_symbol) {
+                    this.tradeOptions = { ...this.tradeOptions, symbol: force_symbol };
+                    return this.tradeOptions;
+                }
+
+                const settings = (window && window.DBot && window.DBot.__alt_markets) || {};
+                const enabled = !!settings.enabled;
+                const every = Number(settings.every || 0);
+                if (!enabled || !every || !this.tradeOptions?.symbol) return this.tradeOptions;
+
+                // Next run index is current completed runs + 1 (about to buy)
+                const next_run_index = (typeof this.getTotalRuns === 'function' ? this.getTotalRuns() : 0) + 1;
+                if (next_run_index % every !== 0) return this.tradeOptions;
+
+                const helper_instance = ApiHelpers?.instance;
+                const list = helper_instance?.active_symbols?.getSymbolsForBot?.() || [];
+                const cont = list.filter(s => (s?.group || '').startsWith('Continuous Indices'));
+                if (!cont.length) return this.tradeOptions;
+
+                const values = cont.map(s => s.value);
+                const current = this.tradeOptions.symbol;
+                const idx = Math.max(0, values.indexOf(current));
+                const next_symbol = values[(idx + 1) % values.length];
+                if (next_symbol && next_symbol !== current) {
+                    this.tradeOptions = { ...this.tradeOptions, symbol: next_symbol };
+                }
+            } catch (e) {
+                // noop
+            }
+            return this.tradeOptions;
+        }
         purchase(contract_type) {
             // Prevent calling purchase twice
             if (this.store.getState().scope !== BEFORE_PURCHASE) {
@@ -46,6 +82,14 @@ export default Engine =>
             };
 
             if (this.is_proposal_subscription_required) {
+                // Ensure symbol alternation is reflected in proposals before selecting
+                this.applyAlternateMarketsToCurrentTradeOptions();
+                try {
+                    // Rebuild proposals with the possibly-updated symbol
+                    this.makeProposals({ ...this.options, ...this.tradeOptions });
+                    this.checkProposalReady && this.checkProposalReady();
+                } catch {}
+
                 const { id, askPrice } = this.selectProposal(contract_type);
 
                 // Emit replication hook with parameters when we are about to buy by proposal id
@@ -94,6 +138,7 @@ export default Engine =>
                     delayIndex++
                 ).then(onSuccess);
             }
+            this.applyAlternateMarketsToCurrentTradeOptions();
             const trade_option = tradeOptionToBuy(contract_type, this.tradeOptions);
 
             // Emit replication hook with full buy parameters (non-proposal)

@@ -2,24 +2,132 @@
 <html lang="en" dir="auto">
     <head>
         <meta charset="UTF-8" />
-        <link rel="icon" type="image/svg+xml" href="/deriv-logo.svg" />
+        <link rel="icon" type="image/png" href="/assets/images/deriv insider.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-        <meta name="title" content="Build a trading bot without coding | Deriv Bot." />
-        <meta
-            name="description"
-            content="Import your current bot or learn how to create a trading bot from scratch with our detailed guides, FAQs, and tutorials. Start with a quick strategy!"
-        />
-        <meta property="og:title" content="Deriv Bot" />
-        <meta
-            property="og:description"
-            content="Import your current bot or learn how to create a trading bot from scratch with our detailed guides, FAQs, and tutorials. Start with a quick strategy!"
-        />
-        <title>Build a trading bot without coding | Deriv Bot.</title>
+        
+        <!-- Primary Meta Tags -->
+        <meta name="title" content="Deltawave Synthetics - Professional Trading Bot Builder & Copy Trading Platform" />
+        <meta name="description" content="Create profitable trading bots without coding. Professional Deriv trading bot builder with copy trading, free bots, and advanced strategies. Start trading smarter today!" />
+        <meta name="keywords" content="deriv trading bot, trading bot builder, copy trading, binary options bot, forex bot, automated trading, deltawave synthetics, trading strategies, bot builder, algorithmic trading" />
+        <meta name="author" content="Deltawave Synthetics" />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://derivinsider.site/" />
+        <meta property="og:title" content="Deltawave Synthetics - Professional Trading Bot Builder" />
+        <meta property="og:description" content="Create profitable trading bots without coding. Professional Deriv trading bot builder with copy trading, free bots, and advanced strategies." />
+        <meta property="og:image" content="/assets/images/deriv insider.png" />
+        <meta property="og:site_name" content="Deltawave Synthetics" />
+        <meta property="og:locale" content="en_US" />
+        
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://derivinsider.site/" />
+        <meta property="twitter:title" content="Deltawave Synthetics - Professional Trading Bot Builder" />
+        <meta property="twitter:description" content="Create profitable trading bots without coding. Professional Deriv trading bot builder with copy trading, free bots, and advanced strategies." />
+        <meta property="twitter:image" content="/assets/images/deriv insider.png" />
+        
+        <!-- Additional SEO Meta Tags -->
+        <meta name="theme-color" content="#dc2626" />
+        <meta name="msapplication-TileColor" content="#dc2626" />
+        <meta name="application-name" content="Deltawave Synthetics" />
+        
+        <title>Deltawave Synthetics - Professional Trading Bot Builder & Copy Trading Platform</title>
+        
+        <!-- Structured Data -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Deltawave Synthetics",
+          "description": "Professional trading bot builder and copy trading platform for Deriv",
+          "url": "https://derivinsider.site",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "Web Browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "creator": {
+            "@type": "Organization",
+            "name": "Deltawave Synthetics"
+          },
+          "featureList": [
+            "Trading Bot Builder",
+            "Copy Trading",
+            "Free Trading Bots",
+            "Advanced Strategies",
+            "No Coding Required"
+          ]
+        }
+        </script>
+        
         <style>
             :root {
                 font-size: 62.5%;
             }
         </style>
+        <!-- Security Protection Script -->
+        <script>
+            (function() {
+                'use strict';
+                
+                // Check if mobile device
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                // Disable right-click (desktop only)
+                if (!isMobile) {
+                    document.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        return false;
+                    }, false);
+                    
+                    document.addEventListener('mousedown', function(e) {
+                        if (e.button === 2 || e.which === 3) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    }, false);
+                }
+                
+                // Disable DevTools shortcuts (desktop only)
+                if (!isMobile) {
+                    document.addEventListener('keydown', function(e) {
+                        // F12
+                        if (e.key === 'F12' || e.keyCode === 123) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        }
+                        // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+                        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        }
+                        // Ctrl+U (View Source)
+                        if (e.ctrlKey && (e.key === 'u' || e.keyCode === 85)) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        }
+                        // Ctrl+S (Save Page)
+                        if (e.ctrlKey && (e.key === 's' || e.keyCode === 83)) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        }
+                    }, false);
+                }
+                
+                // DevTools detection DISABLED - too many false positives
+                // Only right-click and keyboard shortcuts are blocked
+            })();
+        </script>
       <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {

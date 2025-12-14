@@ -96,6 +96,16 @@ export const ToolboxItems = () =>
                                                                     movable='false'
                                                                 >
                                                                     <Field name='RESTARTONERROR'>TRUE</Field>
+                                                                    <Next>
+                                                                        <Block
+                                                                            type='trade_definition_alternate_markets'
+                                                                            deletable='false'
+                                                                            movable='false'
+                                                                        >
+                                                                            <Field name='ALT_MARKETS_ENABLED'>FALSE</Field>
+                                                                            <Field name='ALT_MARKETS_EVERY'>1</Field>
+                                                                        </Block>
+                                                                    </Next>
                                                                 </Block>
                                                             </Next>
                                                         </Block>
@@ -431,17 +441,7 @@ export const ToolboxItems = () =>
                     <Block type='total_runs' />
                 </Category>
 
-                <Category name={localize('Contract modifiers')} id='contract_modifiers'>
-                    <Block type='contract_type_switcher'>
-                        <Field name='STATUS'>DISABLE</Field>
-                    </Block>
-                    <Block type='custom_prediction_setter'>
-                        <Field name='PRED'>1</Field>
-                    </Block>
-                    <Block type='market_symbol_changer'>
-                        <Field name='STATUS'>DISABLE</Field>
-                    </Block>
-                </Category>
+                
 
             </Category>
 
@@ -525,6 +525,19 @@ export const ToolboxItems = () =>
                         <Value name='B'>
                             <Shadow type='math_number'>
                                 <Field name='NUM'>1</Field>
+                            </Shadow>
+                        </Value>
+                    </Block>
+                    <Block type='math_minmax'>
+                        <Field name='OP'>MIN</Field>
+                        <Value name='A'>
+                            <Shadow type='math_number'>
+                                <Field name='NUM'>0</Field>
+                            </Shadow>
+                        </Value>
+                        <Value name='B'>
+                            <Shadow type='math_number'>
+                                <Field name='NUM'>0</Field>
                             </Shadow>
                         </Value>
                     </Block>
@@ -798,6 +811,41 @@ export const ToolboxItems = () =>
                         </Value>
                     </Block>
                 </Category>
+            </Category>
+
+            <Category id='virtual_hook' name={localize('Virtual Hook Switcher')}>
+                <Block type='vh_settings' />
+                <Block type='vh_toggle' />
+            </Category>
+
+            <Category id='binarytools' name={localize('Binarytools')}>
+                <Block type='tool_binarytools'>
+                    <Field name='COLOR'>green</Field>
+                    <Field name='SOUND'>silent</Field>
+                    <Field name='NAME'>Binarytool</Field>
+                </Block>
+            </Category>
+
+            <Category name={localize('Contract modifiers')} id='contract_modifiers'>
+                <Block type='contract_type_switcher'>
+                    <Field name='STATUS'>DISABLE</Field>
+                </Block>
+                <Block type='custom_prediction_setter'>
+                    <Field name='PRED'>1</Field>
+                </Block>
+                <Block type='market_symbol_changer'>
+                    <Field name='STATUS'>DISABLE</Field>
+                </Block>
+            </Category>
+
+            <Category name={localize('Barrier Settings')} id='barrier_settings_category'>
+                <Block type='barrier_settings' />
+                <Block type='touchnotouch_offset_enabler'>
+                    <Field name='STATUS'>disable</Field>
+                </Block>
+                <Block type='touchnotouch_barrier_changer'>
+                    <Field name='VALUE'>abc</Field>
+                </Block>
             </Category>
 
             <Examples id='examples'>

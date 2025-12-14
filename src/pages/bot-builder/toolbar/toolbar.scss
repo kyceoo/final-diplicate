@@ -33,6 +33,20 @@
     &__btn {
         background-color: var(--button-primary-default) !important;
 
+        &--start {
+            background-color: #5a7ba8 !important; // Dull blue for Quick strategy button
+            
+            &:hover:not([disabled]) {
+                background-color: #4a6fa5 !important; // Darker dull blue on hover
+            }
+            
+            // Ensure text remains white for contrast
+            .dc-btn__text,
+            .dc-btn__icon {
+                color: #FFFFFF !important;
+            }
+        }
+
         &--icon {
             display: flex;
             justify-content: center;

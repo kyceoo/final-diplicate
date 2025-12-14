@@ -12,7 +12,7 @@ import {
     LabelPairedPageCircleArrowRightSmRegularIcon,
     LabelPairedTrashSmRegularIcon,
 } from '@deriv/quill-icons/LabelPaired';
-import { LegacyMenuDots1pxIcon, LegacySave1pxIcon } from '@deriv/quill-icons/Legacy';
+import { LegacyMenuDots1pxIcon } from '@deriv/quill-icons/Legacy';
 import { Localize } from '@deriv-com/translations';
 import { useDevice } from '@deriv-com/ui';
 import { rudderStackSendDashboardClickEvent } from '../../../analytics/rudderstack-dashboard';
@@ -24,19 +24,6 @@ export const CONTEXT_MENU = [
         type: STRATEGY.OPEN,
         icon: <LabelPairedPageCircleArrowRightSmRegularIcon fill='var(--text-general)' />,
         label: <Localize i18n_default_text='Open' />,
-    },
-    {
-        type: STRATEGY.SAVE,
-        icon: (
-            <LegacySave1pxIcon
-                fill='var(--text-general)'
-                className='icon-general-fill-path'
-                iconSize='xs'
-                path=''
-                opacity={0.8}
-            />
-        ),
-        label: <Localize i18n_default_text='Save' />,
     },
     {
         type: STRATEGY.DELETE,
@@ -52,9 +39,8 @@ type TRecentWorkspace = {
 };
 
 const RecentWorkspace = observer(({ workspace, index }: TRecentWorkspace) => {
-    const { dashboard, load_modal, save_modal } = useStore();
+    const { dashboard, load_modal } = useStore();
     const { setActiveTab } = dashboard;
-    const { toggleSaveModal, updateBotName } = save_modal;
     const {
         dashboard_strategies = [],
         getSaveType,
@@ -101,22 +87,12 @@ const RecentWorkspace = observer(({ workspace, index }: TRecentWorkspace) => {
         rudderStackSendDashboardClickEvent({ dashboard_click_name: 'open', subpage_name: 'bot_builder' });
     };
 
-    const handleSave = () => {
-        updateBotName(workspace?.name);
-        toggleSaveModal();
-        rudderStackSendDashboardClickEvent({ dashboard_click_name: 'save', subpage_name: 'dashboard' });
-    };
-
     const viewRecentStrategy = async (type: string) => {
         setSelectedStrategyId(workspace.id);
 
         switch (type) {
             case STRATEGY.OPEN:
                 await handleOpen();
-                break;
-
-            case STRATEGY.SAVE:
-                handleSave();
                 break;
 
             case STRATEGY.DELETE:

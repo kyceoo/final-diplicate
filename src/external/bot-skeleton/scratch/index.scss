@@ -660,9 +660,18 @@ drag a block and selected text moves instead.
         font-weight: 500;
     }
 
-    .blocklyMainBackground {
-        stroke-width: 0;
-        fill: #fff;
+    // Trade parameters block icon styling
+    .blocklyFieldImage {
+        filter: brightness(0) saturate(100%) invert(85%) sepia(100%) saturate(1000%) hue-rotate(45deg) brightness(1.2) contrast(1.5) !important;
+        stroke: #FFD700 !important;
+        stroke-width: 3px !important;
+    }
+
+    // Specific styling for trade definition block icons
+    .blocklyBlockCanvas .blocklyFieldImage[src*="defineContract"] {
+        filter: brightness(0) saturate(100%) invert(85%) sepia(100%) saturate(1000%) hue-rotate(45deg) brightness(1.2) contrast(1.5) !important;
+        stroke: #FFD700 !important;
+        stroke-width: 3px !important;
     }
 
     .blocklyMutatorBackground {

@@ -301,7 +301,7 @@ const CopyTrading = observer(() => {
                 if (!tokens || tokens.length === 0) {
                     console.warn('Copy Trading: No tokens available for authorization');
                     setLoginId('No tokens');
-                    setBalance('Please add tokens first');
+                    setBalance('******');
                     return;
                 }
 

@@ -1,197 +1,92 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './app-loader.scss';
 
 interface AppLoaderProps {
     onLoadingComplete: () => void;
-    duration?: number; // Duration in milliseconds, default 6000ms (6 seconds)
+    duration?: number; // Duration in milliseconds, default 12000ms (12 seconds)
 }
 
-const AppLoader: React.FC<AppLoaderProps> = ({ onLoadingComplete, duration = 6000 }) => {
-  const [progress, setProgress] = useState(1);
+const AppLoader: React.FC<AppLoaderProps> = ({ onLoadingComplete, duration = 1200 }) => {
   const [isVisible, setIsVisible] = useState(true);
-  const bgElementsRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
 
-  // Create twinkling stars
-  const createStars = () => {
-    if (!bgElementsRef.current) return;
+  const messages = [
+    { title: 'Initializing' },
+    { title: 'Connecting to trading server...' },
+    { title: 'Loading charts' },
+    { title: 'Loading Blocky' },
+    { title: 'Preparing dashboard' },
+  ];
 
-    // Create many more stars for a rich starfield effect
-    for (let i = 0; i < 200; i++) {
-      const star = document.createElement('div');
-      star.className = 'star';
+  // Initialize loading timer
+  // Total loader duration fixed at 6 seconds
+  const effectiveDuration = 6000;
 
-      const size = Math.random() * 4 + 0.5; // Varied sizes from 0.5px to 4.5px
-      const leftPos = Math.random() * 100;
-      const topPos = Math.random() * 100;
-      const duration = 2 + Math.random() * 8; // Faster twinkling
-      const delay = Math.random() * 10; // More varied delays
-      const opacity = 0.2 + Math.random() * 0.8; // More opacity variation
-
-      star.style.width = `${size}px`;
-      star.style.height = `${size}px`;
-      star.style.left = `${leftPos}%`;
-      star.style.top = `${topPos}%`;
-      star.style.setProperty('--duration', `${duration}s`);
-      star.style.setProperty('--opacity', opacity.toString());
-      star.style.animationDelay = `${delay}s`;
-
-      // Add some stars with different shapes for variety
-      if (Math.random() > 0.8) {
-        star.style.borderRadius = '0';
-        star.style.transform = 'rotate(45deg)';
-      }
-
-      bgElementsRef.current.appendChild(star);
-    }
-  };
-
-  // Create falling dollar bills
-  const createDollar = () => {
-    if (!bgElementsRef.current) return;
-
-    const dollarSigns = ['💰', '💵', '💲', '🪙', '💴', '💶', '💷', '💸', '🤑', '💎'];
-    const dollar = document.createElement('div');
-    dollar.className = 'dollar';
-    dollar.textContent = dollarSigns[Math.floor(Math.random() * dollarSigns.length)];
-
-    const leftPos = Math.random() * 100;
-    const duration = 3 + Math.random() * 8; // Faster falling
-    const delay = Math.random() * 2; // Less delay for more continuous flow
-    const size = 0.6 + Math.random() * 1.8; // More size variation
-    const rotation = Math.random() * 360;
-
-    dollar.style.left = `${leftPos}%`;
-    dollar.style.animationDuration = `${duration}s`;
-    dollar.style.animationDelay = `${delay}s`;
-    dollar.style.fontSize = `${size}em`;
-    dollar.style.opacity = (0.4 + Math.random() * 0.6).toString();
-    dollar.style.transform = `rotate(${rotation}deg)`;
-
-    // Add some horizontal drift for more natural movement
-    const drift = (Math.random() - 0.5) * 20;
-    dollar.style.setProperty('--drift', `${drift}px`);
-
-    bgElementsRef.current.appendChild(dollar);
-
-    setTimeout(() => {
-      if (dollar.parentNode === bgElementsRef.current) {
-        bgElementsRef.current?.removeChild(dollar);
-      }
-    }, duration * 1000);
-  };
-
-  // Create multiple dollars at once for heavy rain effect
-  const createDollarBurst = () => {
-    // Create 5-8 dollars at once
-    const burstCount = 5 + Math.floor(Math.random() * 4);
-    for (let i = 0; i < burstCount; i++) {
-      setTimeout(() => createDollar(), i * 50); // Slight stagger
-    }
-  };
-
-  // Container hover effect
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const container = e.currentTarget;
-    const x = e.clientX / window.innerWidth;
-    const y = e.clientY / window.innerHeight;
-    container.style.transform = `translateY(0) rotate3d(${y}, ${x}, 0, ${(x - 0.5) * 2}deg) scale(1.02)`;
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.currentTarget.style.transform = 'translateY(0) rotate3d(0, 0, 0, 0) scale(1)';
-  };
-
-  // Initialize animations
   useEffect(() => {
-    createStars();
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(onLoadingComplete, 300); // Wait for fade out animation
+    }, effectiveDuration);
 
-    // Create initial heavy dollar rain
-    for (let i = 0; i < 100; i++) {
-      setTimeout(() => createDollar(), i * 30); // Create 100 dollars quickly
-    }
+    return () => clearTimeout(timer);
+  }, [onLoadingComplete, effectiveDuration]);
 
-    // Create continuous dollar bursts
-    const dollarInterval = setInterval(createDollarBurst, 150); // More frequent bursts
+  // Progress bar and message advancement
+  useEffect(() => {
+    if (!isVisible) return;
 
-    // Also create individual dollars for continuous flow
-    const singleDollarInterval = setInterval(createDollar, 80);
-    
-    // Loading simulation (6 seconds)
-    let currentProgress = 1;
-    let speed = 0.5;
-    const progressInterval = setInterval(() => {
-      if (currentProgress < 30) {
-        speed += 0.15;
-      } else if (currentProgress > 85) {
-        speed *= 0.85;
+    setProgress(0);
+    // Evenly split the 6s across all messages
+    const totalPerMessageMs = Math.max(200, Math.floor(effectiveDuration / messages.length));
+    const stepMs = totalPerMessageMs / 100;
+    let current = 0;
+
+    const interval = setInterval(() => {
+      current += 1;
+      if (current > 100) {
+        clearInterval(interval);
+        // move to next message if any, and restart
+        setMessageIndex(prev => {
+          const next = prev + 1;
+          if (next < messages.length) {
+            // trigger next cycle
+            setProgress(0);
+            return next;
+          }
+          return prev;
+        });
+        return;
       }
+      setProgress(current);
+    }, Math.max(4, stepMs));
 
-      currentProgress = Math.min(currentProgress + speed, 100);
-      setProgress(Math.floor(currentProgress));
-
-      if (currentProgress >= 100) {
-        clearInterval(progressInterval);
-        // Add a small delay before hiding to show 100% completion
-        setTimeout(() => {
-          setIsVisible(false);
-          setTimeout(onLoadingComplete, 300); // Wait for fade out animation
-        }, 200);
-      }
-    }, 40);
-
-    return () => {
-      clearInterval(dollarInterval);
-      clearInterval(singleDollarInterval);
-      clearInterval(progressInterval);
-    };
-  }, [onLoadingComplete]);
+    return () => clearInterval(interval);
+  }, [isVisible, messageIndex, duration]);
 
   if (!isVisible) return null;
 
   return (
-    <div className="trading-hub-loader">
-      <div className="background-elements" ref={bgElementsRef}></div>
+    <div
+      className="georgetown-loader"
+      style={{
+        backgroundImage: "url('/assets/images/deriv insider.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      <div className="chart-container"></div>
       
-      <div 
-        className="loader-container"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
-        <div className="logo">
-          <div className="logo-main">PRO</div>
-          <div className="logo-sub">TRADINGHUB</div>
-        </div>
-        
-        <div className="welcome-message">
-          <div className="welcome-title">Welcome to deriv third party powered website</div>
-          <div className="welcome-text">Gain access to premium trading features unavailable on the official platform</div>
-        </div>
-        
-        <div className="features-container">
-          <div className="feature-main">Automate your trades now</div>
-          <ul className="feature-list">
-            <li className="feature-item">Analysis Tool</li>
-            <li className="feature-item">Trading Bots</li>
-            <li className="feature-item">Copy Trading</li>
-          </ul>
-          <div className="feature-tagline">Making trading smooth, simple, and stress-free</div>
-        </div>
-        
-        <div className="progress-container">
-          <div className="progress-text">
-            <span>Loading premium features</span>
-            <span className="progress-percent">{progress}%</span>
-          </div>
-          <div className="progress-bar">
-            <div 
-              className="progress-fill" 
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-          <div className="progress-dots">
-            <div className="progress-dot"></div>
-            <div className="progress-dot"></div>
-            <div className="progress-dot"></div>
+      <div className="content-overlay">
+        <div className="maroon-banner">
+          <h1 className="banner-title">megadbot.com</h1>
+          <p className="banner-message">{messages[messageIndex]?.title || 'Connecting to trading server...'}</p>
+          <div className="progress-wrapper">
+            <div className="progress-track">
+              <div className="loading-bar-glow" style={{ width: `${progress}%` }} />
+            </div>
+            <div className="progress-counter">{progress}%</div>
           </div>
         </div>
       </div>

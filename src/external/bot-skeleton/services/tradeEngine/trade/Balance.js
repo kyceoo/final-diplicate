@@ -26,9 +26,12 @@ export default Engine =>
         // eslint-disable-next-line class-methods-use-this
         getBalance(type) {
             const { client } = DBotStore.instance;
+            // client.balance is now a computed getter that uses swapped balance
             const balance = (client && client.balance) || 0;
+            // Convert string balance to number if needed
+            const balanceNum = typeof balance === 'string' ? parseFloat(balance) || 0 : balance;
 
-            balance_string = getFormattedText(balance, client.currency, false);
-            return type === 'STR' ? balance_string : balance;
+            balance_string = getFormattedText(balanceNum, client.currency, false);
+            return type === 'STR' ? balance_string : balanceNum;
         }
     };

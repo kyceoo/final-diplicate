@@ -22,13 +22,13 @@ import {
     LabelPairedChartLineCaptionRegularIcon,
     LabelPairedObjectsColumnCaptionRegularIcon,
     LabelPairedPuzzlePieceTwoCaptionBoldIcon,
-    LabelPairedSignalCaptionRegularIcon,
 } from '@deriv/quill-icons/LabelPaired';
 import { LegacyChartsIcon, LegacyGuide1pxIcon, LegacyIndicatorsIcon } from '@deriv/quill-icons/Legacy';
 import { requestOidcAuthentication } from '@deriv-com/auth-client';
 import { Localize, localize } from '@deriv-com/translations';
 import { useDevice } from '@deriv-com/ui';
 import RunPanel from '../../components/run-panel';
+import SpeedBotFloatingStop from '../../components/speedbot-floating-stop';
 import ChartModal from '../chart/chart-modal';
 import Dashboard from '../dashboard';
 import RunStrategy from '../dashboard/run-strategy';
@@ -38,13 +38,14 @@ const ChartWrapper = lazy(() => import('../chart/chart-wrapper'));
 
 const TradingView = lazy(() => import('../tradingview'));
 const AnalysisTool = lazy(() => import('../analysis-tool'));
-const Signals = lazy(() => import('../signals'));
 const CopyTrading = lazy(() => import('../copy-trading'));
 const SmartTrader = lazy(() => import('../smart-trader'));
+const SpeedBot = lazy(() => import('../speedbot'));
 const ProTool = lazy(() => import('../pro-tool'));
 const Dtrader = lazy(() => import('../dtrader'));
 // Import FreeBots directly instead of lazy loading for faster access
 import FreeBots from '../free-bots';
+const Dcircles = lazy(() => import('../dcircles'));
 
 const AppWrapper = observer(() => {
     const { connectionStatus } = useApiBase();
@@ -74,9 +75,9 @@ const AppWrapper = observer(() => {
         [key: string]: string;
     };
     const { clear } = summary_card;
-    const { DASHBOARD, BOT_BUILDER } = DBOT_TABS;
+    const { DASHBOARD, BOT_BUILDER, SMART_TRADER } = DBOT_TABS;
     const init_render = React.useRef(true);
-    const hash = ['dashboard', 'bot_builder', 'chart', 'free_bots', 'copy_trading', 'smart_trader', 'dtrader'];
+    const hash = ['dashboard', 'bot_builder', 'chart', 'free_bots', 'dcircles', 'copy_trading', 'smart_trader', 'dtrader', 'tradingview', 'analysis_tool', 'speedbot'];
     const { isDesktop } = useDevice();
     const location = useLocation();
     const navigate = useNavigate();
@@ -289,7 +290,6 @@ const AppWrapper = observer(() => {
                                     <ChartWrapper show_digits_stats={false} />
                                 </Suspense>
                             </div>
-
                             <div
                                 label={
                                     <>
@@ -308,7 +308,26 @@ const AppWrapper = observer(() => {
                             <div
                                 label={
                                     <>
-                                        <LabelPairedSignalCaptionRegularIcon
+                                        <LabelPairedPuzzlePieceTwoCaptionBoldIcon
+                                            height='24px'
+                                            width='24px'
+                                            fill='var(--text-general)'
+                                        />
+                                        <Localize i18n_default_text='Dcircles' />
+                                    </>
+                                }
+                                id='id-dcircles'
+                            >
+                                <Suspense
+                                    fallback={<ChunkLoader message={localize('Please wait, loading Dcircles...')} />}
+                                >
+                                    <Dcircles />
+                                </Suspense>
+                            </div>
+                            <div
+                                label={
+                                    <>
+                                        <LabelPairedObjectsColumnCaptionRegularIcon
                                             height='24px'
                                             width='24px'
                                             fill='var(--text-general)'
@@ -343,25 +362,6 @@ const AppWrapper = observer(() => {
                                     fallback={<ChunkLoader message={localize('Please wait, loading Smart Trader...')} />}
                                 >
                                     <SmartTrader />
-                                </Suspense>
-                            </div>
-                            <div
-                                label={
-                                    <>
-                                        <LabelPairedPuzzlePieceTwoCaptionBoldIcon
-                                            height='24px'
-                                            width='24px'
-                                            fill='var(--text-general)'
-                                        />
-                                        <Localize i18n_default_text='pRO TOOL' />
-                                    </>
-                                }
-                                id='id-pro-tool'
-                            >
-                                <Suspense
-                                    fallback={<ChunkLoader message={localize('Please wait, loading pRO TOOL...')} />}
-                                >
-                                    <ProTool />
                                 </Suspense>
                             </div>
                             <div
@@ -418,20 +418,23 @@ const AppWrapper = observer(() => {
                             <div
                                 label={
                                     <>
-                                        <LabelPairedSignalCaptionRegularIcon
-                                            height='16px'
-                                            width='16px'
+                                        <LabelPairedPuzzlePieceTwoCaptionBoldIcon
+                                            height='24px'
+                                            width='24px'
                                             fill='var(--text-general)'
                                         />
-                                        <Localize i18n_default_text='Signals' />
+                                        <span className='nav-speedbot-label'>
+                                            <Localize i18n_default_text='SpeedBot' />
+                                        </span>
+                                        <span className='nav-rocket' aria-hidden='true'>🚀</span>
                                     </>
                                 }
-                                id='id-signals'
+                                id='id-speedbot'
                             >
                                 <Suspense
-                                    fallback={<ChunkLoader message={localize('Please wait, loading Signals...')} />}
+                                    fallback={<ChunkLoader message={localize('Please wait, loading SpeedBot...')} />}
                                 >
-                                    <Signals />
+                                    <SpeedBot />
                                 </Suspense>
                             </div>
                         </Tabs>
@@ -446,7 +449,8 @@ const AppWrapper = observer(() => {
                 <ChartModal />
                 <TradingViewModal />
             </DesktopWrapper>
-            <MobileWrapper>{!is_open && <RunPanel />}</MobileWrapper>
+            <MobileWrapper>{!is_open && active_tab !== DBOT_TABS.SMART_TRADER && <RunPanel />}</MobileWrapper>
+            <SpeedBotFloatingStop />
             <Dialog
                 cancel_button_text={cancel_button_text || localize('Cancel')}
                 className='dc-dialog__wrapper--fixed'

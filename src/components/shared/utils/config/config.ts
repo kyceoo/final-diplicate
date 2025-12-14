@@ -7,9 +7,9 @@ export const APP_IDS = {
     STAGING: 29934,
     STAGING_BE: 29934,
     STAGING_ME: 29934,
-    PRODUCTION: 65555,
-    PRODUCTION_BE: 65556,
-    PRODUCTION_ME: 65557,
+    PRODUCTION: 116471,
+    PRODUCTION_BE: 116471,
+    PRODUCTION_ME: 116471,
 };
 
 export const livechat_license_id = 12049137;
@@ -30,15 +30,27 @@ export const domain_app_ids = {
     'masterhunter.site': 96223,
     'developmentviewport.netlify.app': 97311,
     'www.developmentviewport.netlify.app': 97311,
-
-    
-
-
+    'qtropwinninghub.vercel.app': 107823,
+    'www.qtropwinninghub.vercel.app': 107823,
+    'qtropwinnershub.site': 107823,
+    'www.qtropwinnershub.site': 107823,
 };
 
-export const getCurrentProductionDomain = () =>
-    !/^staging\./.test(window.location.hostname) &&
-    Object.keys(domain_app_ids).find(domain => window.location.hostname === domain);
+export const getCurrentProductionDomain = () => {
+    // If it's staging, return null to use staging app ID
+    if (/^staging\./.test(window.location.hostname)) {
+        return null;
+    }
+    
+    // Check if domain is explicitly configured
+    const exactMatch = Object.keys(domain_app_ids).find(domain => window.location.hostname === domain);
+    if (exactMatch) {
+        return exactMatch;
+    }
+    
+    // For any other production domain, return the hostname to use production app ID
+    return window.location.hostname;
+};
 
 export const isProduction = () => {
     const all_domains = Object.keys(domain_app_ids).map(domain => `(www\\.)?${domain.replace('.', '\\.')}`);
@@ -77,14 +89,21 @@ export const getDefaultAppIdAndUrl = () => {
 
 export const getAppId = () => {
     let app_id = null;
-    const current_domain = getCurrentProductionDomain() ?? '';
 
     if (isStaging()) {
         app_id = APP_IDS.STAGING;
     } else if (isTestLink()) {
         app_id = APP_IDS.LOCALHOST;
     } else {
-        app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.PRODUCTION;
+        const current_domain = getCurrentProductionDomain();
+        
+        // If domain is explicitly configured, use that app ID
+        if (current_domain && domain_app_ids[current_domain as keyof typeof domain_app_ids]) {
+            app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids];
+        } else {
+            // For any other production domain, use the production app ID
+            app_id = APP_IDS.PRODUCTION;
+        }
     }
 
     window.localStorage.setItem('config.app_id', app_id.toString());

@@ -1,0 +1,40 @@
+.dcircles {
+    width: 100%;
+    height: calc(100vh - 60px); // Account for navigation bar
+    padding: 0;
+    margin: 0;
+    background: var(--general-main-1);
+    overflow: hidden;
+    box-sizing: border-box;
+    position: relative;
+    
+    &__container {
+        height: 100%;
+        width: 100%;
+        position: relative;
+        margin: 0;
+        padding: 0;
+        
+        // Leave space for Run button on mobile only
+        @media (max-width: 768px) {
+            padding-bottom: 60px;
+        }
+    }
+    
+    &__iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: transparent;
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        
+        // Reduce height to leave space for Run button on mobile only
+        @media (max-width: 768px) {
+            height: calc(100% - 60px);
+        }
+    }
+}

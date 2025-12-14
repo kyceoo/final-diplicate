@@ -125,6 +125,41 @@
             width: 318px;
             height: 32px !important;
             margin: 12px 24px;
+            
+            // Make reset button text theme-responsive - multiple overrides
+            color: var(--text-prominent) !important;
+            font-weight: bold !important;
+            
+            // Target all possible text elements
+            .dc-btn__text,
+            .dc-btn__icon,
+            span,
+            div,
+            p,
+            label,
+            * {
+                color: var(--text-prominent) !important;
+                font-weight: bold !important;
+            }
+            
+            // Override any button state styling
+            &:hover,
+            &:focus,
+            &:active,
+            &:visited {
+                color: var(--text-prominent) !important;
+                
+                .dc-btn__text,
+                .dc-btn__icon,
+                span,
+                div,
+                p,
+                label,
+                * {
+                    color: var(--text-prominent) !important;
+                    font-weight: bold !important;
+                }
+            }
         }
     }
 
@@ -139,6 +174,51 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 padding: 0 0.8rem;
+                
+                // Theme-responsive text color
+                color: var(--text-prominent) !important;
+                font-weight: bold !important;
+                
+                * {
+                    color: var(--text-prominent) !important;
+                    font-weight: bold !important;
+                }
+                
+                span, div, p, label {
+                    color: var(--text-prominent) !important;
+                    font-weight: bold !important;
+                }
+                
+                // Specifically target non-active tabs
+                &:not(.dc-tabs__active) {
+                    color: var(--text-prominent) !important;
+                    font-weight: bold !important;
+                    
+                    * {
+                        color: var(--text-prominent) !important;
+                        font-weight: bold !important;
+                    }
+                    
+                    span, div, p, label {
+                        color: var(--text-prominent) !important;
+                        font-weight: bold !important;
+                    }
+                }
+            }
+            
+            &__active {
+                color: var(--text-prominent) !important;
+                font-weight: bold !important;
+                
+                * {
+                    color: var(--text-prominent) !important;
+                    font-weight: bold !important;
+                }
+                
+                span, div, p, label {
+                    color: var(--text-prominent) !important;
+                    font-weight: bold !important;
+                }
             }
         }
     }
@@ -188,6 +268,288 @@
             height: 2.6rem !important;
             min-width: 8rem;
         }
+        
+        // Theme-responsive text color
+        color: var(--text-prominent) !important;
+        font-weight: bold !important;
+        
+        .dc-btn__text,
+        .dc-btn__icon {
+            color: var(--text-prominent) !important;
+            font-weight: bold !important;
+        }
+        
+        span, div, p, label, * {
+            color: var(--text-prominent) !important;
+            font-weight: bold !important;
+        }
+    }
+}
+
+// ULTIMATE OVERRIDE - Force reset button text to be theme-responsive
+.run-panel__footer-button,
+.run-panel__clear-button,
+.run-panel__footer .dc-btn,
+.run-panel .dc-btn {
+    color: var(--text-prominent) !important;
+    font-weight: bold !important;
+    
+    * {
+        color: var(--text-prominent) !important;
+        font-weight: bold !important;
+    }
+    
+    .dc-btn__text,
+    .dc-btn__icon,
+    span,
+    div,
+    p,
+    label {
+        color: var(--text-prominent) !important;
+        font-weight: bold !important;
+    }
+    
+    &:hover,
+    &:focus,
+    &:active,
+    &:visited {
+        color: var(--text-prominent) !important;
+        
+        * {
+            color: var(--text-prominent) !important;
+            font-weight: bold !important;
+        }
+        
+        .dc-btn__text,
+        .dc-btn__icon,
+        span,
+        div,
+        p,
+        label {
+            color: var(--text-prominent) !important;
+            font-weight: bold !important;
+        }
+    }
+}
+
+// EXTRA SPECIFIC OVERRIDE for secondary buttons in run panel
+.run-panel .dc-btn--secondary,
+.run-panel .dc-btn--secondary .dc-btn__text,
+.run-panel .dc-btn--secondary .dc-btn__icon,
+.run-panel .dc-btn--secondary span,
+.run-panel .dc-btn--secondary div,
+.run-panel .dc-btn--secondary p,
+.run-panel .dc-btn--secondary label,
+.run-panel .dc-btn--secondary * {
+    color: var(--text-prominent) !important;
+    font-weight: bold !important;
+}
+
+// Override secondary button states
+.run-panel .dc-btn--secondary:hover,
+.run-panel .dc-btn--secondary:focus,
+.run-panel .dc-btn--secondary:active,
+.run-panel .dc-btn--secondary:visited {
+    color: var(--text-prominent) !important;
+    
+    .dc-btn__text,
+    .dc-btn__icon,
+    span,
+    div,
+    p,
+    label,
+    * {
+        color: var(--text-prominent) !important;
+        font-weight: bold !important;
+    }
+}
+
+// MAXIMUM SPECIFICITY OVERRIDE for reset button
+body .run-panel .run-panel__footer .run-panel__footer-button,
+body .run-panel .run-panel__clear-button,
+body .run-panel .run-panel__footer .dc-btn--secondary,
+body .run-panel .dc-btn--secondary {
+    color: var(--text-prominent) !important;
+    font-weight: bold !important;
+    
+    .dc-btn__text,
+    .dc-btn__icon,
+    span,
+    div,
+    p,
+    label,
+    * {
+        color: var(--text-prominent) !important;
+        font-weight: bold !important;
+    }
+    
+    &:hover,
+    &:focus,
+    &:active,
+    &:visited {
+        color: var(--text-prominent) !important;
+        
+        .dc-btn__text,
+        .dc-btn__icon,
+        span,
+        div,
+        p,
+        label,
+        * {
+            color: var(--text-prominent) !important;
+            font-weight: bold !important;
+        }
+    }
+}
+
+// NUCLEAR OPTION - Force white in dark mode, black in light mode
+body.theme--dark .run-panel .run-panel__footer .run-panel__footer-button,
+body.theme--dark .run-panel .run-panel__clear-button,
+body.theme--dark .run-panel .run-panel__footer .dc-btn--secondary,
+body.theme--dark .run-panel .dc-btn--secondary {
+    color: #ffffff !important;
+    
+    .dc-btn__text,
+    .dc-btn__icon,
+    span,
+    div,
+    p,
+    label,
+    * {
+        color: #ffffff !important;
+        font-weight: bold !important;
+    }
+    
+    &:hover,
+    &:focus,
+    &:active,
+    &:visited {
+        color: #ffffff !important;
+        
+        .dc-btn__text,
+        .dc-btn__icon,
+        span,
+        div,
+        p,
+        label,
+        * {
+            color: #ffffff !important;
+            font-weight: bold !important;
+        }
+    }
+}
+
+body.theme--light .run-panel .run-panel__footer .run-panel__footer-button,
+body.theme--light .run-panel .run-panel__clear-button,
+body.theme--light .run-panel .run-panel__footer .dc-btn--secondary,
+body.theme--light .run-panel .dc-btn--secondary {
+    color: #000000 !important;
+    
+    .dc-btn__text,
+    .dc-btn__icon,
+    span,
+    div,
+    p,
+    label,
+    * {
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+    
+    &:hover,
+    &:focus,
+    &:active,
+    &:visited {
+        color: #000000 !important;
+        
+        .dc-btn__text,
+        .dc-btn__icon,
+        span,
+        div,
+        p,
+        label,
+        * {
+            color: #000000 !important;
+            font-weight: bold !important;
+        }
+    }
+}
+
+// ULTIMATE OVERRIDE - Target the specific button icon issue
+.run-panel__footer-button .dc-btn__icon,
+.run-panel__clear-button .dc-btn__icon,
+.run-panel .dc-btn--secondary .dc-btn__icon {
+    color: var(--text-prominent) !important;
+}
+
+// Force override for button text content
+.run-panel__footer-button,
+.run-panel__clear-button,
+.run-panel .dc-btn--secondary {
+    .dc-btn__text {
+        color: var(--text-prominent) !important;
+    }
+    
+    // Override any inherited text-general color
+    color: var(--text-prominent) !important;
+    
+    // Target all possible text elements
+    span, div, p, label, * {
+        color: var(--text-prominent) !important;
+    }
+}
+
+// MAXIMUM SPECIFICITY - Target by ID and class combination
+#db-run-panel__clear-button,
+#db-run-panel__clear-button.dc-btn--secondary,
+#db-run-panel__clear-button.run-panel__footer-button,
+#db-run-panel__clear-button.run-panel__clear-button {
+    color: var(--text-prominent) !important;
+    
+    .dc-btn__text,
+    .dc-btn__icon,
+    span, div, p, label, * {
+        color: var(--text-prominent) !important;
+        font-weight: bold !important;
+    }
+    
+    &:hover,
+    &:focus,
+    &:active,
+    &:visited {
+        color: var(--text-prominent) !important;
+        
+        .dc-btn__text,
+        .dc-btn__icon,
+        span, div, p, label, * {
+            color: var(--text-prominent) !important;
+            font-weight: bold !important;
+        }
+    }
+}
+
+// FINAL NUCLEAR OPTION - Direct theme targeting by ID
+body.theme--dark #db-run-panel__clear-button,
+body.theme--dark #db-run-panel__clear-button.dc-btn--secondary {
+    color: #ffffff !important;
+    
+    .dc-btn__text,
+    .dc-btn__icon,
+    span, div, p, label, * {
+        color: #ffffff !important;
+        font-weight: bold !important;
+    }
+}
+
+body.theme--light #db-run-panel__clear-button,
+body.theme--light #db-run-panel__clear-button.dc-btn--secondary {
+    color: #000000 !important;
+    
+    .dc-btn__text,
+    .dc-btn__icon,
+    span, div, p, label, * {
+        color: #000000 !important;
+        font-weight: bold !important;
     }
 }
 

@@ -8,6 +8,8 @@ import Text from '@/components/shared_ui/text';
 import { WalletIcon } from '@/components/shared_ui/wallet-icon';
 import { useStore } from '@/hooks/useStore';
 import useStoreWalletAccountsList from '@/hooks/useStoreWalletAccountsList';
+import { useAccountDisplay } from '@/hooks/useAccountDisplay';
+import { getAccountDisplayInfo } from '@/utils/balance-swap-utils';
 import {
     AccountsDerivAccountLightIcon,
     LabelPairedLockCaptionBoldIcon,
@@ -51,8 +53,11 @@ const DropdownArrow = ({ is_disabled = false }: TDropdownArrow) =>
         </div>
     );
 
-const BalanceLabel = ({ balance, currency, is_virtual, display_code }: Partial<TBalanceLabel>) =>
-    typeof balance !== 'undefined' || !currency ? (
+const BalanceLabel = ({ balance, currency, is_virtual, display_code, loginId }: Partial<TBalanceLabel> & { loginId?: string }) => {
+    const accountDisplay = useAccountDisplay(loginId);
+    const displayBalance = loginId ? accountDisplay.balance : balance;
+    
+    return typeof displayBalance !== 'undefined' || !currency ? (
         <div className='acc-info__wallets-account-type-and-balance'>
             <Text
                 as='p'
@@ -64,11 +69,12 @@ const BalanceLabel = ({ balance, currency, is_virtual, display_code }: Partial<T
                 {!currency ? (
                     <Localize i18n_default_text='No currency assigned' />
                 ) : (
-                    `${formatMoney(currency, balance ?? 0, true)} ${display_code}`
+                    `${formatMoney(currency, displayBalance ?? 0, true)} ${display_code}`
                 )}
             </Text>
         </div>
     ) : null;
+};
 
 const MobileInfoIcon = observer(({ gradients, icons, icon_type }: TInfoIcons) => {
     const {
@@ -119,7 +125,32 @@ const AccountInfoWallets = observer(({ is_dialog_on, toggleDialog }: TAccountInf
     const { data: wallet_list } = useStoreWalletAccountsList();
     const { isDesktop } = useDevice();
 
-    const balance = all_accounts_balance?.accounts?.[loginid ?? '']?.balance;
+    // Get balance considering swap state
+    const originalBalanceData = all_accounts_balance?.accounts?.[loginid ?? ''];
+    const originalBalanceNum = originalBalanceData?.balance ?? 0;
+    const originalBalance = originalBalanceNum.toString();
+    const accountData = loginid ? accounts[loginid] : null;
+    const accountDataWithBalance = accountData ? {
+        ...accountData,
+        balance: originalBalance,
+        is_virtual: accountData.is_virtual
+    } : null;
+    // Pass all_accounts_balance to get live demo balance for mirroring
+    const accountDisplay = loginid && accountDataWithBalance 
+        ? getAccountDisplayInfo(loginid, accountDataWithBalance, all_accounts_balance)
+        : null;
+    
+    // Get the display balance - if swapped, use swapped balance, otherwise use original
+    let balance: number;
+    if (accountDisplay?.isSwapped && accountDisplay.balance) {
+        // Balance is swapped - convert from string to number
+        balance = typeof accountDisplay.balance === 'string' 
+            ? parseFloat(accountDisplay.balance) || 0
+            : (accountDisplay.balance || 0);
+    } else {
+        // No swap - use original balance from all_accounts_balance
+        balance = originalBalanceNum;
+    }
     const active_account = accounts?.[loginid ?? ''];
     const linked_dtrade_trading_account_loginid = loginid;
 
@@ -160,6 +191,7 @@ const AccountInfoWallets = observer(({ is_dialog_on, toggleDialog }: TAccountInf
                         currency={active_account?.currency}
                         is_virtual={Boolean(active_account?.is_virtual)}
                         display_code={getCurrencyDisplayCode(active_account?.currency)}
+                        loginId={active_account?.loginid}
                     />
                     {show_badge && (
                         <WalletBadge

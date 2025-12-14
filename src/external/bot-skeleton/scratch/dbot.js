@@ -175,6 +175,19 @@ class DBot {
 
                 const event_group = `dbot-load${Date.now()}`;
                 window.Blockly.Events.setGroup(event_group);
+                // Normalize foreign XML block names before import for Free Bots and similar flows
+                if (typeof window.Blockly.derivWorkspace.strategy_to_load === 'string') {
+                    let s = window.Blockly.derivWorkspace.strategy_to_load;
+                    // Alias notify -> btnotify
+                    s = s.replace(/type=\"notify\"/g, 'type=\"btnotify\"');
+                    // Alias math_number_positive -> math_number
+                    s = s.replace(/type=\"math_number_positive\"/g, 'type=\"math_number\"');
+                    // Strip nested xmlns on mutation nodes
+                    s = s.replace(/<mutation\s+xmlns=\"[^\"]*\"/g, '<mutation');
+                    // Remove control characters
+                    s = s.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+                    window.Blockly.derivWorkspace.strategy_to_load = s;
+                }
                 window.Blockly.Xml.domToWorkspace(
                     window.Blockly.utils.xml.textToDom(window.Blockly.derivWorkspace.strategy_to_load),
                     this.workspace

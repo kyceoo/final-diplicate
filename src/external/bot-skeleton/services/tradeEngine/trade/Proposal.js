@@ -1,5 +1,6 @@
 import { localize } from '@deriv-com/translations';
 import { api_base } from '../../api/api-base';
+import ApiHelpers from '../../api/api-helpers';
 import { doUntilDone, tradeOptionToProposal } from '../utils/helpers';
 import { clearProposals, proposalsReady } from './state/actions';
 
@@ -13,9 +14,38 @@ export default Engine =>
             // Generate a purchase reference when trade options are different from previous trade options.
             // This will ensure the bot doesn't mistakenly purchase the wrong proposal.
             this.regeneratePurchaseReference();
-            this.trade_option = trade_option;
-            this.proposal_templates = tradeOptionToProposal(trade_option, this.getPurchaseReference());
+            this.trade_option = this.applyAlternateMarketsIfNeeded(trade_option);
+            this.proposal_templates = tradeOptionToProposal(this.trade_option, this.getPurchaseReference());
             this.renewProposalsOnPurchase();
+        }
+
+        applyAlternateMarketsIfNeeded(trade_option) {
+            try {
+                const settings = (window && window.DBot && window.DBot.__alt_markets) || {};
+                const enabled = !!settings.enabled;
+                const every = Number(settings.every || 0);
+                if (!enabled || !every || !trade_option?.symbol) return trade_option;
+
+                const next_run_index = (typeof this.getTotalRuns === 'function' ? this.getTotalRuns() : 0) + 1;
+                if (next_run_index % every !== 0) return trade_option;
+
+                const helper_instance = ApiHelpers?.instance;
+                const list = helper_instance?.active_symbols?.getSymbolsForBot?.() || [];
+                // Only rotate within Continuous Indices
+                const cont = list.filter(s => (s?.group || '').startsWith('Continuous Indices'));
+                if (!cont.length) return trade_option;
+
+                const values = cont.map(s => s.value);
+                const current = trade_option.symbol;
+                const idx = Math.max(0, values.indexOf(current));
+                const next_symbol = values[(idx + 1) % values.length];
+                if (next_symbol && next_symbol !== current) {
+                    return { ...trade_option, symbol: next_symbol };
+                }
+            } catch (e) {
+                // noop
+            }
+            return trade_option;
         }
 
         selectProposal(contract_type) {

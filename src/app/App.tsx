@@ -11,9 +11,16 @@ import { crypto_currencies_display_order, fiat_currencies_display_order } from '
 import { StoreProvider } from '@/hooks/useStore';
 import CallbackPage from '@/pages/callback';
 import Endpoint from '@/pages/endpoint';
+import AppwriteTest from '@/components/appwrite-test';
+import CreateSite from '@/pages/sites/create-site';
+import SitesList from '@/pages/sites/sites-list';
+import VerifyDatabase from '@/pages/sites/verify-database';
 import { TAuthData } from '@/types/api-types';
 import { initializeI18n, localize, TranslationProvider } from '@deriv-com/translations';
 import CoreStoreProvider from './CoreStoreProvider';
+import SecurityProtection from '@/components/security/security-protection';
+import client, { databases, DATABASE_ID } from '@/utils/appwrite';
+import { Account } from 'appwrite';
 import './app-root.scss';
 
 const Layout = lazy(() => import('../components/layout'));
@@ -54,6 +61,10 @@ const router = createBrowserRouter(
             <Route index element={<AppRoot />} />
             <Route path='endpoint' element={<Endpoint />} />
             <Route path='callback' element={<CallbackPage />} />
+            <Route path='appwrite-test' element={<AppwriteTest />} />
+            <Route path='sites' element={<SitesList />} />
+            <Route path='sites/new' element={<CreateSite />} />
+            <Route path='sites/verify' element={<VerifyDatabase />} />
             {/* Catch-all route for debugging */}
             <Route
                 path='*'
@@ -62,7 +73,7 @@ const router = createBrowserRouter(
                         <h1>🔍 Route Debug Info</h1>
                         <p>Current URL: {window.location.href}</p>
                         <p>Pathname: {window.location.pathname}</p>
-                        <p>Available routes: /, /endpoint, /callback</p>
+                        <p>Available routes: /, /endpoint, /callback, /appwrite-test</p>
                         <button onClick={() => (window.location.href = '/')}>Go to Home</button>
                     </div>
                 }
@@ -78,6 +89,64 @@ function App() {
 
         initSurvicate();
         window?.dataLayer?.push({ event: 'page_load' });
+
+        // Initialize Appwrite connection - Make multiple API calls immediately
+        // Appwrite console detects connections by monitoring API requests
+        // We make several calls to ensure detection works reliably
+        const initializeAppwriteConnection = () => {
+            const endpoint = process.env.VITE_APPWRITE_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
+            const projectId = process.env.VITE_APPWRITE_PROJECT_ID || '6937a1ac00182dcb68fb';
+            
+            console.log('🔌 Initializing Appwrite connection...', { endpoint, projectId });
+            
+            // Call 1: Account API (most reliable for connection detection)
+            const account = new Account(client);
+            account.get()
+                .then(() => {
+                    console.log('✅ Appwrite Account API: Connected');
+                })
+                .catch((error: any) => {
+                    if (error.code === 401) {
+                        console.log('✅ Appwrite Account API: Server reachable (auth required)');
+                    } else {
+                        console.log('⚠️ Appwrite Account API:', error.code, error.message);
+                    }
+                });
+            
+            // Call 2: Database API - Try to list documents
+            setTimeout(() => {
+                databases.listDocuments(DATABASE_ID, 'sites_collection', [], 1)
+                    .then(() => {
+                        console.log('✅ Appwrite Database API: Connected');
+                    })
+                    .catch((error: any) => {
+                        if (error.code === 401 || error.code === 404) {
+                            console.log('✅ Appwrite Database API: Server reachable');
+                        } else {
+                            console.log('⚠️ Appwrite Database API:', error.code, error.message);
+                        }
+                    });
+            }, 100);
+            
+            // Call 3: Another account call after a short delay (helps with detection)
+            setTimeout(() => {
+                account.get()
+                    .catch(() => {
+                        // Silent - just making another API call for detection
+                    });
+            }, 500);
+            
+            // Call 4: Another database call for better detection
+            setTimeout(() => {
+                databases.listDocuments(DATABASE_ID, 'sites_collection', [], 1)
+                    .catch(() => {
+                        // Expected to fail - just making API call for detection
+                    });
+            }, 1000);
+        };
+
+        // Initialize immediately
+        initializeAppwriteConnection();
 
         // Prefetch Free Bots XMLs on startup for instant availability
         // Skip prefetch on very slow connections (2G)
@@ -156,9 +225,12 @@ function App() {
     }, []);
 
     return (
-        <AppLoaderWrapper duration={getLoaderDuration()} enabled={isLoaderEnabled()}>
-            <RouterProvider router={router} />
-        </AppLoaderWrapper>
+        <>
+            <SecurityProtection />
+            <AppLoaderWrapper duration={getLoaderDuration()} enabled={isLoaderEnabled()}>
+                <RouterProvider router={router} />
+            </AppLoaderWrapper>
+        </>
     );
 }
 

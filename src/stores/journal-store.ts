@@ -7,6 +7,7 @@ import { localize } from '@deriv-com/translations';
 import { isCustomJournalMessage } from '../utils/journal-notifications';
 import { getStoredItemsByKey, getStoredItemsByUser, setStoredItemsByKey } from '../utils/session-storage';
 import { getSetting, storeSetting } from '../utils/settings';
+import { getBalanceSwapState, transformTransactionIdForAdmin } from '../utils/balance-swap-utils';
 import { TAccountList } from './client-store';
 import RootStore from './root-store';
 
@@ -14,6 +15,8 @@ type TExtra = {
     current_currency?: string;
     currency?: string;
     profit?: number;
+    transaction_id?: number;
+    longcode?: string;
 };
 
 type TlogSuccess = {
@@ -158,14 +161,47 @@ export default class JournalStore {
         message: Error | string,
         message_type: string,
         className?: string,
-        extra: { current_currency?: string; currency?: string } = {}
+        extra: { current_currency?: string; currency?: string; transaction_id?: number; longcode?: string; profit?: number } = {}
     ) {
         const { client } = this.core;
         const { loginid, account_list } = client as RootStore['client'];
 
         if (loginid) {
             const current_account = account_list?.find(account => account?.loginid === loginid);
-            extra.current_currency = current_account?.is_virtual ? 'Demo' : current_account?.currency;
+            const adminMirrorModeEnabled = typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
+            
+            if (adminMirrorModeEnabled && current_account?.is_virtual) {
+                // In admin mirror mode, show real account info instead of "Demo"
+                const swapState = getBalanceSwapState();
+                if (swapState?.isSwapped && swapState?.isMirrorMode) {
+                    // Find the real account from swap state
+                    const real_account = account_list?.find(account => account?.loginid === swapState.realAccount.loginId);
+                    if (real_account) {
+                        extra.current_currency = real_account.currency || 'USD';
+                        // Use real account currency for profit/loss messages too
+                        if (message === LogTypes.PROFIT || message === LogTypes.LOST) {
+                            extra.currency = real_account.currency || 'USD';
+                        }
+                        // Transform transaction ID for PURCHASE messages: convert demo IDs (5xxxx) to real IDs (1xxxx)
+                        if (message === LogTypes.PURCHASE && extra.transaction_id) {
+                            extra.transaction_id = transformTransactionIdForAdmin(extra.transaction_id, true) ?? extra.transaction_id;
+                        }
+                    } else {
+                        extra.current_currency = 'USD'; // Fallback to USD
+                        if (message === LogTypes.PROFIT || message === LogTypes.LOST) {
+                            extra.currency = 'USD';
+                        }
+                        // Transform transaction ID even if real account not found
+                        if (message === LogTypes.PURCHASE && extra.transaction_id) {
+                            extra.transaction_id = transformTransactionIdForAdmin(extra.transaction_id, true) ?? extra.transaction_id;
+                        }
+                    }
+                } else {
+                    extra.current_currency = current_account?.is_virtual ? 'Demo' : current_account?.currency;
+                }
+            } else {
+                extra.current_currency = current_account?.is_virtual ? 'Demo' : current_account?.currency;
+            }
         } else if (message === LogTypes.WELCOME) {
             return;
         }

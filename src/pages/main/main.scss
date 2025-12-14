@@ -10,15 +10,16 @@
 
 // Removed tabs-shadow to fix mobile edge fading issue
 
+
 .main {
     display: flex;
     overflow: hidden;
     width: 100%;
-    height: calc(100vh - 9rem);
-    padding: 1.6rem;
+    height: calc(100vh - 4rem); // Adjusted for larger header (4rem header + navigation)
+    padding: 0; // Remove all padding to eliminate space between header and navigation
 
     @include mobile-or-tablet-screen {
-        height: calc(100vh - 6rem);
+        height: calc(100vh - 3.5rem); // Adjusted for larger mobile header (3.5rem header + navigation)
         padding: 0;
     }
 
@@ -52,32 +53,61 @@
 
         .dc-tabs {
             &__active-line {
-                background-color: #FFA500;
+                background-color: #60A5FA; // Light blue active line to match image
                 transition: none;
             }
 
             &__active {
-                background: #FFA500;
-                color: var(--text-prominent) !important;
+                background: transparent !important;
+                color: #60A5FA !important; // Light blue text for active tab to match image
+                position: relative;
 
-                // Ensure active tab text uses theme-aware color
+                // Ensure active tab text uses light blue color
                 * {
-                    color: var(--text-prominent) !important;
+                    color: #60A5FA !important;
                 }
 
-                // Ensure active tab icons use theme-aware color
+                // Ensure active tab icons use light blue color (brighter than inactive)
                 svg,
                 svg > path,
                 svg > g > path {
-                    fill: var(--text-prominent) !important;
+                    fill: #60A5FA !important; // Brighter blue for active tab icons
+                }
+
+                // Add light blue dash below active tab to match image
+                &::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 30px;
+                    height: 3px;
+                    background-color: #60A5FA; // Light blue to match image
+                    border-radius: 2px;
                 }
             }
 
+    &__list {
+        background: #1e3a5f !important; // Always dark blue, not responsive to theme
+        justify-content: flex-start; // Start from left like friend's design
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0; // Remove all padding to eliminate space
+        margin: 0; // Remove any margins
+        gap: 0; // Remove gaps between items
 
+        // Override tab width calculation to be more compact
+        .dc-tabs__item {
+            width: auto !important; // Let tabs size naturally
+            padding: 0 1.2rem !important; // Reduce padding for tighter spacing
+            margin: 0 !important; // Remove margins
+            flex-shrink: 0; // Prevent shrinking
+        }
 
-            &__list {
-                background: #FFA500;
-                justify-content: start;
+        // Override the default justify-content: center from tabs.scss
+        &:not(&--header-fit-content) {
+            justify-content: flex-start !important; // Start from left like friend's design
+        }
 
                 @include mobile-or-tablet-screen {
                     overflow-x: auto;
@@ -96,7 +126,7 @@
                             @include mobile-or-tablet-screen {
                                 width: 100%;
                                 overflow-x: auto;
-                                padding: 0.8rem 1.6rem 0;
+                                padding: 0; // Remove padding to eliminate space between header and navigation
                             }
                         }
                     }
@@ -216,6 +246,41 @@
             display: none;
         }
     }
+}
+
+/* Bouncing rocket next to SpeedBot tab */
+.nav-rocket {
+  display: inline-block;
+  margin-left: 0.4rem;
+  animation: rocketBounce 1.8s ease-in-out infinite;
+}
+
+/* Pulsing yellow background behind the SpeedBot label only */
+.nav-speedbot-label {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  margin-left: 0.2rem;
+  border-radius: 6px;
+  background: #b38600; /* dark yellow */
+  animation: labelPulse 2s ease-in-out infinite;
+}
+
+@keyframes labelPulse {
+  0%, 100% {
+    background-color: #b38600;
+    box-shadow: 0 0 0 rgba(255, 213, 79, 0);
+  }
+  50% {
+    background-color: #ffd54f; /* light yellow */
+    box-shadow: 0 0 10px rgba(255, 213, 79, 0.4);
+  }
+}
+
+@keyframes rocketBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(-5deg); }
+  50% { transform: translateY(-6px) rotate(0deg); }
+  75% { transform: translateY(-3px) rotate(5deg); }
 }
 
 .animation__wrapper {
@@ -757,130 +822,161 @@
     justify-content: center;
 }
 
-// Theme-aware navigation tabs for improved visibility
-// Higher specificity to override any conflicting styles
-body.theme--light .main__container .main__tabs .dc-tabs__item,
-body.theme--dark .main__container .main__tabs .dc-tabs__item {
-    // Use theme-aware text color for better visibility
-    color: var(--text-prominent) !important;
+// Navigation tabs styling to match image
+.main__container .main__tabs .dc-tabs__item {
+    // All tabs use light blue text
+    color: #93C5FD !important; // Light blue text
+    font-weight: 500 !important;
+    background: transparent !important;
 
     * {
-        color: var(--text-prominent) !important;
-        font-weight: bold !important;
+        color: #93C5FD !important;
+        font-weight: 500 !important;
     }
 
+    // Icon wrapper for blue overlay effect
+    svg {
+        position: relative;
+        filter: drop-shadow(0 0 3px rgba(96, 165, 250, 0.6));
+        
+        &::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: rgba(96, 165, 250, 0.35);
+            border-radius: 2px;
+            mix-blend-mode: multiply;
+            pointer-events: none;
+            z-index: -1;
+        }
+    }
+    
     svg,
     svg > path,
     svg > g > path {
-        fill: var(--text-prominent) !important;
+        fill: #FFD700 !important; // Yellow base color
+        stroke: #FFD700 !important;
+        stroke-width: 0.5px !important;
+        filter: drop-shadow(0 0 2px rgba(147, 197, 253, 0.7)) 
+                drop-shadow(0 0 4px rgba(96, 165, 250, 0.5));
     }
 
-    &:not(.dc-tabs__active) {
-        // Inactive tabs with reduced opacity for better hierarchy
-        color: var(--text-less-prominent) !important;
-
-        * {
-            color: var(--text-less-prominent) !important;
-        }
-
-        svg,
-        svg > path,
-        svg > g > path {
-            fill: var(--text-less-prominent) !important;
-        }
-
-        &:hover {
-            // Full prominence on hover for better UX
-            color: var(--text-prominent) !important;
-
-            * {
-                color: var(--text-prominent) !important;
-            }
-
-            svg,
-            svg > path,
-            svg > g > path {
-                fill: var(--text-prominent) !important;
-            }
-        }
-    }
-
-    // Special handling for active tabs to ensure maximum visibility
+    // Active tab - light blue text and underline
     &.dc-tabs__active {
-        color: var(--text-prominent) !important;
+        background: transparent !important;
+        color: #60A5FA !important; // Light blue for active
 
         * {
-            color: var(--text-prominent) !important;
-            font-weight: bold !important;
+            color: #60A5FA !important;
         }
 
+        svg {
+            filter: drop-shadow(0 0 4px rgba(96, 165, 250, 0.8));
+            
+            &::before {
+                background: rgba(96, 165, 250, 0.45);
+            }
+        }
+        
         svg,
         svg > path,
         svg > g > path {
-            fill: var(--text-prominent) !important;
+            fill: #FFD700 !important; // Yellow base color
+            stroke: #FFD700 !important;
+            stroke-width: 0.5px !important;
+            filter: drop-shadow(0 0 3px rgba(96, 165, 250, 0.8)) 
+                    drop-shadow(0 0 6px rgba(96, 165, 250, 0.6));
+        }
+    }
+
+    // Hover effect for all tabs
+    &:hover {
+        color: #93C5FD !important;
+        background: transparent !important;
+        transition: all 0.2s ease;
+
+        * {
+            color: #93C5FD !important;
+        }
+
+        svg {
+            filter: drop-shadow(0 0 3px rgba(96, 165, 250, 0.7));
+            
+            &::before {
+                background: rgba(96, 165, 250, 0.4);
+            }
+        }
+        
+        svg,
+        svg > path,
+        svg > g > path {
+            fill: #FFD700 !important; // Yellow base color
+            stroke: #FFD700 !important;
+            stroke-width: 0.5px !important;
+            filter: drop-shadow(0 0 2px rgba(147, 197, 253, 0.7)) 
+                    drop-shadow(0 0 4px rgba(96, 165, 250, 0.5));
         }
     }
 }
 
-// Fallback for cases where body classes might not be applied
-.main__container .main__tabs .dc-tabs__item {
-    // Use theme-aware text color for better visibility
-    color: var(--text-prominent) !important;
-
-    * {
-        color: var(--text-prominent) !important;
-        font-weight: bold !important;
+// Force all tab text and icons - override any default styles
+.dc-tabs__item {
+    color: #93C5FD !important; // Light blue text
+    
+    span, div, p, * {
+        color: #93C5FD !important;
     }
-
-    svg,
-    svg > path,
-    svg > g > path {
-        fill: var(--text-prominent) !important;
-    }
-
-    &:not(.dc-tabs__active) {
-        // Inactive tabs with reduced opacity for better hierarchy
-        color: var(--text-less-prominent) !important;
-
-        * {
-            color: var(--text-less-prominent) !important;
-        }
-
-        svg,
-        svg > path,
-        svg > g > path {
-            fill: var(--text-less-prominent) !important;
-        }
-
-        &:hover {
-            // Full prominence on hover for better UX
-            color: var(--text-prominent) !important;
-
-            * {
-                color: var(--text-prominent) !important;
-            }
-
-            svg,
-            svg > path,
-            svg > g > path {
-                fill: var(--text-prominent) !important;
-            }
+    
+    svg {
+        position: relative;
+        filter: drop-shadow(0 0 3px rgba(96, 165, 250, 0.6));
+        
+        &::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: rgba(96, 165, 250, 0.35);
+            border-radius: 2px;
+            mix-blend-mode: multiply;
+            pointer-events: none;
+            z-index: -1;
         }
     }
+    
+    svg, svg * {
+        fill: #FFD700 !important; // Yellow base color
+        stroke: #FFD700 !important;
+        stroke-width: 0.5px !important;
+        filter: drop-shadow(0 0 2px rgba(147, 197, 253, 0.7)) 
+                drop-shadow(0 0 4px rgba(96, 165, 250, 0.5));
+    }
+}
 
-    // Special handling for active tabs to ensure maximum visibility
-    &.dc-tabs__active {
-        color: var(--text-prominent) !important;
+// Navigation bar always dark blue (not responsive to theme)
+body.theme--dark .main__container .main__tabs .dc-tabs__list,
+body.theme--light .main__container .main__tabs .dc-tabs__list {
+    background: #1e3a5f !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-        * {
-            color: var(--text-prominent) !important;
-            font-weight: bold !important;
-        }
-
-        svg,
-        svg > path,
-        svg > g > path {
-            fill: var(--text-prominent) !important;
-        }
+// Override any theme-based colors
+body.theme--light .dc-tabs__item,
+body.theme--dark .dc-tabs__item {
+    color: #93C5FD !important; // Light blue text
+    
+    span, div, p, * {
+        color: #93C5FD !important;
+    }
+    
+    svg, svg * {
+        fill: #93C5FD !important; // Light blue icons
+        stroke: #93C5FD !important;
+        stroke-width: 0.5px !important;
     }
 }

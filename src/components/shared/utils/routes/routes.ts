@@ -86,7 +86,7 @@ export const standalone_routes = {
     traders_hub_lowcode: getDerivDomain('derivHub'),
     recent_transactions: `${getDerivDomain('derivHub')}/tradershub/redirect?action=redirect_to&redirect_to=wallet`,
     wallets_transfer: `${getDerivDomain('derivApp')}/wallet/account-transfer`,
-    signup: `${getDerivDomain('derivHub')}/tradershub/signup`,
+    signup: `https://partners.deriv.com/rx?sidc=CE59670D-4F32-46BC-AA56-7765DA349281&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU51217`,
     deriv_com: getDerivDomain('derivCom'),
     deriv_app: getDerivDomain('derivApp'),
     endpoint: `${window.location.origin}/endpoint`,

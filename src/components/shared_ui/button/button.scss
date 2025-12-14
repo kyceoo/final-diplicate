@@ -161,7 +161,24 @@
 
         .dc-btn__text,
         .dc-btn__icon {
-            color: var(--text-prominent);
+            color: var(--text-prominent) !important; // Theme-responsive text color
+        }
+        
+        // Additional override for run panel secondary buttons
+        &.run-panel__footer-button,
+        &.run-panel__clear-button {
+            color: var(--text-prominent) !important;
+            
+            .dc-btn__text,
+            .dc-btn__icon,
+            span,
+            div,
+            p,
+            label,
+            * {
+                color: var(--text-prominent) !important;
+                font-weight: bold !important;
+            }
         }
     }
 
@@ -220,6 +237,23 @@
         .dc-btn__text,
         .dc-btn__icon {
             color: var(--text-colored-background);
+        }
+    }
+
+    &--blue {
+        background: #60A5FA;
+
+        &:hover:not([disabled]) {
+            background: #3B82F6;
+        }
+
+        &:active:not([disabled]) {
+            background: #60A5FA;
+        }
+
+        .dc-btn__text,
+        .dc-btn__icon {
+            color: #FFFFFF;
         }
     }
 
